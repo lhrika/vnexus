@@ -2,7 +2,8 @@
 	<dialog
 		v-if="model"
 		ref="dialog"
-		class="bg-white p-4 rounded w-full max-w-screen-md m-auto open:flex flex-col gap-4 backdrop:bg-black transition-opacity backdrop:transition-opacity"
+		class="bg-white p-4 rounded w-11/12 max-w-screen-md mx-auto mt-4 md:my-auto open:flex flex-col gap-4 backdrop:bg-black transition-opacity backdrop:transition-opacity"
+		autofocus
 	>
 		<div class="">
 			<span v-if="model.base !== undefined">🟢 Base save is </span>
