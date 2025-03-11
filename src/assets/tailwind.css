@@ -1,0 +1,7 @@
+@import 'tailwindcss';
+@layer base {
+	:root,
+	html {
+		@apply text-gray-900;
+	}
+}
