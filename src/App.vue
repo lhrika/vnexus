@@ -1,30 +1,69 @@
 <template>
 	<article>
 		<header class="flex flex-col items-center">
-			<div
-				class="w-full h-0 flex flex-col gap-4 items-center justify-center bg-fuchsia-50 transition-all overflow-hidden"
-				:class="{
-					'h-screen': showHeader,
-				}"
+			<Transition
+				enter-active-class="transition-all"
+				enter-from-class="-translate-y-10 opacity-0 h-0"
+				leave-active-class="transition-all"
+				leave-to-class="translate-y-10 opacity-0 h-0"
 			>
-				<label
-					class="border-4 border-gray-400 text-center border-dashed text-lg md:text-2xl text-gray-500 hover:text-gray-700 cursor-pointer flex justify-center items-center min-w-80 min-h-40 w-8/12 h-8/12"
-					@drop.prevent="handleDrop"
-					@dragover.prevent=""
+				<div
+					v-show="showHeader"
+					class="relative w-full h-screen flex flex-col gap-4 items-center justify-center bg-fuchsia-50 transition-all overflow-hidden"
 				>
-					Drop your file here<br />
-					or<br />
-					Click here to upload
-					<input type="file" @change="handleFileUpload" accept=".json" hidden />
-				</label>
-				<button
-					type="button"
-					class="flex items-center justify-center gap-1 cursor-pointer"
-					@click="downloadJson"
-				>
-					<ArrowDownCircleIcon class="size-6" />Download
-				</button>
-			</div>
+					<div class="absolute top-4">
+						<span
+							:class="{
+								'text-gray-500': activeTab === 'load',
+								'text-blue-700': activeTab !== 'load',
+								'hover:underline': activeTab !== 'load',
+								'cursor-pointer': activeTab !== 'load',
+							}"
+							@click="activeTab = 'load'"
+							>I have data</span
+						>
+						|
+						<span
+							:class="{
+								'text-gray-500': activeTab === 'new',
+								'text-blue-700': activeTab !== 'new',
+								'hover:underline': activeTab !== 'new',
+								'cursor-pointer': activeTab !== 'new',
+							}"
+							@click="activeTab = 'new'"
+							>Create new data</span
+						>
+					</div>
+					<Transition
+						enter-active-class="transition-all"
+						enter-from-class="translate-x-10 opacity-0"
+						leave-active-class="transition-all"
+						leave-to-class="-translate-x-10 opacity-0"
+						mode="out-in"
+					>
+						<NewDataForm v-if="activeTab === 'new'" @create="handleCreateNewData" />
+						<div v-else-if="activeTab === 'load'" class="flex flex-col gap-4">
+							<label
+								class="border-4 border-gray-400 text-center border-dashed text-lg md:text-2xl text-gray-500 hover:text-gray-700 cursor-pointer flex justify-center items-center min-w-80 min-h-40"
+								@drop.prevent="handleDrop"
+								@dragover.prevent=""
+							>
+								Drop your file here<br />
+								or<br />
+								Click here to upload
+								<input type="file" @change="handleFileUpload" accept=".json" hidden />
+							</label>
+							<button
+								type="button"
+								class="flex items-center justify-center gap-1 cursor-pointer"
+								@click="downloadJson"
+							>
+								<ArrowDownCircleIcon class="size-6" />Download
+							</button>
+						</div>
+					</Transition>
+				</div>
+			</Transition>
 			<label
 				class="border-t-16 border-b-0 border-l-16 border-transparent border-r-16 border-t-pink-600 w-0 h-0 transition-transform"
 				:class="{
@@ -52,6 +91,7 @@
 import { ref, watch, onMounted } from 'vue'
 import SaveList from './components/SaveList.vue'
 import { ArrowDownCircleIcon } from '@heroicons/vue/24/outline'
+import NewDataForm from './components/NewDataForm.vue'
 const dataKey = 'VNexusData'
 const debugData = {
 	max: 120,
@@ -67,6 +107,15 @@ onMounted(() => {
 		data.value = JSON.parse(serializedData)
 	}
 })
+
+const handleCreateNewData = (max: number, cols: number, rows: number) => {
+	data.value = {
+		max: max,
+		cols: cols,
+		rows: rows,
+		saves: [],
+	}
+}
 
 const downloadJson = () => {
 	// Step 1: Convert JSON data to a string
@@ -128,7 +177,9 @@ watch(
 	},
 )
 
+// Header
 const showHeader = ref<boolean>(false)
+const activeTab = ref<string>('load')
 
 const handleDrop = (ev: DragEvent) => {
 	if (ev.dataTransfer) {

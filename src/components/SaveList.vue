@@ -53,7 +53,7 @@ import type { Save } from '@/types'
 import { ChevronRightIcon } from '@heroicons/vue/24/solid'
 import { ChevronLeftIcon } from '@heroicons/vue/24/solid'
 import SaveSlot from './SaveSlot.vue'
-import { nextTick, ref, useTemplateRef } from 'vue'
+import { nextTick, ref, useTemplateRef, computed } from 'vue'
 import SaveModal from './SaveModal.vue'
 
 // The model is an array of saves
@@ -66,8 +66,8 @@ const props = defineProps<{
 
 // Current page
 const page = ref(0)
-const savesPerPage = props.rows * props.cols
-const totalPages = Math.ceil(props.max / savesPerPage)
+const savesPerPage = computed(() => props.rows * props.cols)
+const totalPages = computed(() => Math.ceil(props.max / savesPerPage.value))
 // Functions for navigation between pages
 const nextPage = () => {
 	page.value++
