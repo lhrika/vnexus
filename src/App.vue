@@ -9,7 +9,7 @@
 			>
 				<div
 					v-show="showHeader"
-					class="relative w-full h-screen flex flex-col gap-4 items-center justify-center bg-fuchsia-50 transition-all overflow-hidden"
+					class="relative w-full h-[90vh] flex flex-col gap-4 items-center justify-center bg-fuchsia-50 transition-all overflow-hidden"
 				>
 					<div class="absolute top-4">
 						<span

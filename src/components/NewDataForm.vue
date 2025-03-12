@@ -1,5 +1,5 @@
 <template>
-	<div class="flex flex-col gap-4">
+	<div class="flex flex-col gap-4 max-w-full">
 		<div class="flex flex-col gap-1">
 			<label for="max">Max Saves:</label>
 			<input
@@ -11,7 +11,7 @@
 				class="border border-pink-300 rounded px-2 py-1 outline-pink-400"
 			/>
 		</div>
-		<div class="flex gap-2">
+		<div class="flex flex-col md:flex-row gap-4">
 			<div class="flex flex-col gap-1">
 				<label for="cols">Columns:</label>
 				<input
