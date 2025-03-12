@@ -44,7 +44,7 @@
 						<NewDataForm v-if="activeTab === 'new'" @create="handleCreateNewData" />
 						<div v-else-if="activeTab === 'load'" class="flex flex-col gap-4">
 							<label
-								class="border-4 border-gray-400 text-center border-dashed text-lg md:text-2xl text-gray-500 hover:text-gray-700 cursor-pointer flex justify-center items-center min-w-80 min-h-40"
+								class="border-4 border-gray-400 text-center border-dashed text-lg md:text-2xl text-gray-500 hover:text-gray-700 cursor-pointer flex justify-center items-center w-80 md:w-120 aspect-video"
 								@drop.prevent="handleDrop"
 								@dragover.prevent=""
 							>
