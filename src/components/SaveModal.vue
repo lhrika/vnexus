@@ -5,7 +5,14 @@
 		class="bg-white p-4 rounded w-11/12 max-w-screen-md mx-auto mt-4 md:my-auto open:flex flex-col gap-4 backdrop:bg-black transition-opacity backdrop:transition-opacity"
 		autofocus
 	>
-		<div class="">
+		<button
+			type="button"
+			class="absolute top-4 right-4 cursor-pointer text-gray-500 hover:text-gray-900"
+			@click="cancel"
+		>
+			<XMarkIcon class="size-6" />
+		</button>
+		<div>
 			<span v-if="model.base !== undefined">🟢 Base save is </span>
 			<span class="hover:underline text-blue-700 cursor-pointer" @click="chooseBase">
 				{{
@@ -58,13 +65,6 @@
 		>
 			<TrashIcon class="size-5" />
 			Delete
-		</button>
-		<button
-			type="button"
-			class="absolute top-4 right-4 cursor-pointer text-gray-500 hover:text-gray-900"
-			@click="cancel"
-		>
-			<XMarkIcon class="size-6" />
 		</button>
 	</dialog>
 </template>
