@@ -1,7 +1,12 @@
 <template>
 	<div>
 		<div
-			class="grid gap-4"
+			class="gap-4"
+			:class="{
+				grid: layout === 'grid',
+				flex: layout === 'list',
+				'flex-col': layout === 'list',
+			}"
 			:style="{
 				gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
 				gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
@@ -62,6 +67,7 @@ const props = defineProps<{
 	max: number
 	rows: number
 	cols: number
+	layout: string
 }>()
 
 // Current page

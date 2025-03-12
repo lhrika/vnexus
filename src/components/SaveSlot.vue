@@ -3,11 +3,13 @@
 		class="relative flex items-center justify-center border-2 rounded border-pink-300 hover:bg-pink-50 cursor-pointer aspect-video"
 	>
 		<template v-if="save">
-			<p class="hidden md:block absolute top-0 left-0 text-xs text-gray-300">
+			<p class="hidden md:block absolute top-4 left-4 text-sm text-gray-400">
 				{{ createTime?.toLocaleString() }}
 			</p>
 			<p class="hidden md:block text-center">{{ save.description }}</p>
-			<p class="md:hidden font-bold">
+			<p
+				class="md:absolute md:font-normal md:top-4 md:right-4 md:text-sm md:text-gray-400 font-bold"
+			>
 				{{ Math.floor(saveId / savesPerPage) + 1 }} - {{ (saveId % savesPerPage) + 1 }}
 			</p>
 		</template>
@@ -17,7 +19,7 @@
 
 <script setup lang="ts">
 import type { Save } from '@/types'
-import { computed, onMounted, onBeforeUnmount, ref, useTemplateRef, watch } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps<{
 	saveId: number

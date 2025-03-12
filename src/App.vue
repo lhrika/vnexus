@@ -80,11 +80,13 @@
 					:max="data.max"
 					:rows="data.rows"
 					:cols="data.cols"
+					:layout="layout"
 					v-model="data.saves"
 				></SaveList>
 			</template>
 		</main>
 	</article>
+	<SettingPopup v-model:layout="layout" />
 </template>
 
 <script setup lang="ts">
@@ -92,6 +94,7 @@ import { ref, watch, onMounted } from 'vue'
 import SaveList from './components/SaveList.vue'
 import { ArrowDownCircleIcon } from '@heroicons/vue/24/outline'
 import NewDataForm from './components/NewDataForm.vue'
+import SettingPopup from './components/SettingPopup.vue'
 const dataKey = 'VNexusData'
 const debugData = {
 	max: 120,
@@ -203,4 +206,5 @@ const handleDrop = (ev: DragEvent) => {
 		}
 	}
 }
+const layout = ref<string>('grid')
 </script>
