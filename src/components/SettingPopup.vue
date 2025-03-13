@@ -1,8 +1,8 @@
 <template>
-	<div class="fixed right-4 bottom-4" ref="componentRoot">
+	<div class="fixed right-4 bottom-32" ref="componentRoot">
 		<button
 			type="button"
-			class="flex items-center justify-center p-2 text-white rounded-full shadow-lg bg-pink-300 opacity-50 hover:opacity-100 cursor-pointer"
+			class="flex items-center justify-center p-3 text-white rounded-full shadow-lg bg-pink-300 opacity-50 hover:opacity-100 cursor-pointer"
 			@click="showMenu = !showMenu"
 		>
 			<AdjustmentsHorizontalIcon class="size-6" />
@@ -30,6 +30,7 @@
 				<button
 					type="button"
 					class="flex justify-start items-center text-nowrap gap-1 cursor-pointer hover:bg-pink-200/50 py-2 px-4"
+					@click="showMenu = false"
 				>
 					<QuestionMarkCircleIcon class="size-4" /> Help
 				</button>
@@ -66,5 +67,6 @@ const switchLayout = () => {
 	} else if (layout.value === 'list') {
 		layout.value = 'grid'
 	}
+	showMenu.value = false
 }
 </script>
