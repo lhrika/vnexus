@@ -32,29 +32,13 @@
 				</TransitionGroup>
 			</div>
 		</Transition>
-		<div class="flex justify-center mt-4">
-			<button
-				type="button"
-				class="border border-r-0 rounded-l p-1 text-pink-300 hover:text-pink-400 border-pink-300 cursor-pointer hover:bg-pink-50 disabled:bg-gray-50 disabled:text-gray-300 disabled:border-gray-300 disabled:cursor-auto"
-				:disabled="page <= 0"
-				@click="prevPage"
-			>
-				<ChevronLeftIcon class="size-6" />
-			</button>
-			<div
-				class="border border-pink-300 py-1 px-2 flex justify-center items-center min-w-20 font-bold"
-			>
-				{{ page + 1 }} / {{ totalPages }}
-			</div>
-			<button
-				type="button"
-				class="border border-l-0 rounded-r p-1 text-pink-300 hover:text-pink-400 border-pink-300 cursor-pointer hover:bg-pink-50 disabled:bg-gray-50 disabled:text-gray-300 disabled:border-gray-300 disabled:cursor-auto"
-				:disabled="page >= totalPages - 1"
-				@click="nextPage"
-			>
-				<ChevronRightIcon class="size-6" />
-			</button>
-		</div>
+		<SaveListPagination
+			:total="totalPages"
+			:page="page"
+			@prev="prevPage"
+			@next="nextPage"
+			@goto="gotoPage"
+		/>
 		<SaveModal
 			ref="saveModal"
 			v-model="activeSave"
@@ -69,12 +53,11 @@
 
 <script setup lang="ts">
 import type { Save } from '@/types'
-import { ChevronRightIcon } from '@heroicons/vue/24/solid'
-import { ChevronLeftIcon } from '@heroicons/vue/24/solid'
 import SaveSlot from './SaveSlot.vue'
 import { nextTick, ref, computed } from 'vue'
 import SaveModal from './SaveModal.vue'
 import { generateUuid } from '@/utils'
+import SaveListPagination from './SaveListPagination.vue'
 
 // The model is an array of saves
 const model = defineModel<(Save | undefined)[]>({ required: true })
@@ -101,6 +84,16 @@ const prevPage = () => {
 	enterFromClass.value = 'opacity-0 -translate-x-10'
 	leaveToClass.value = 'opacity-0 translate-x-10'
 	page.value--
+}
+const gotoPage = (target: number) => {
+	if (target < page.value) {
+		enterFromClass.value = 'opacity-0 -translate-x-10'
+		leaveToClass.value = 'opacity-0 translate-x-10'
+	} else {
+		enterFromClass.value = 'opacity-0 translate-x-10'
+		leaveToClass.value = 'opacity-0 -translate-x-10'
+	}
+	page.value = target
 }
 
 // The save shown in the modal
