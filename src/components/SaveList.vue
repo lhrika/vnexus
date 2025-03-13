@@ -128,6 +128,8 @@ const handleCloseModal = (id: number, action: string) => {
 		}
 	}
 	isModalOpen.value = false
+	activeSave.value = undefined
+	activeSaveId.value = undefined
 }
 
 const handleChooseBase = () => {

@@ -95,6 +95,8 @@ import SaveList from './components/SaveList.vue'
 import { ArrowDownCircleIcon } from '@heroicons/vue/24/outline'
 import NewDataForm from './components/NewDataForm.vue'
 import SettingPopup from './components/SettingPopup.vue'
+import type { Data, ExportedData } from './types'
+import { generateUuid } from './utils'
 const dataKey = 'VNexusData'
 const debugData = {
 	max: 120,
@@ -102,7 +104,7 @@ const debugData = {
 	cols: 4,
 	saves: [],
 }
-const data = ref(debugData)
+const data = ref<Data>(debugData)
 
 onMounted(() => {
 	const serializedData = window.localStorage.getItem(dataKey)
@@ -122,7 +124,20 @@ const handleCreateNewData = (max: number, cols: number, rows: number) => {
 
 const downloadJson = () => {
 	// Step 1: Convert JSON data to a string
-	const jsonString = JSON.stringify(data.value, null, 2)
+	const jsonString = JSON.stringify(
+		data.value,
+		(key, value) => {
+			// Check if the key is "options" and the value is an array
+			if (key === 'options' && Array.isArray(value)) {
+				// Map the array to extract only the "value" field from each object
+				return value.map((item) => item.value)
+			} else if (key === 'uuid') {
+				return undefined
+			}
+			return value // Return the value as-is for other keys
+		},
+		2,
+	)
 
 	// Step 2: Create a Blob from the JSON string
 	const blob = new Blob([jsonString], { type: 'application/json' })
@@ -149,7 +164,27 @@ const loadFile = (file: File) => {
 		}
 		try {
 			// Parse the JSON data
-			data.value = JSON.parse(e.target.result.toString())
+			const parsedData: ExportedData = JSON.parse(e.target.result.toString())
+			data.value = {
+				max: parsedData.max,
+				rows: parsedData.rows,
+				cols: parsedData.cols,
+				saves: parsedData.saves.map((value) => ({
+					base: value.base,
+					createTime: value.createTime,
+					updateTime: value.updateTime,
+					description: value.description,
+					decisionPoints: value.decisionPoints?.map((value) => ({
+						uuid: generateUuid(),
+						decision: value.decision,
+						description: value.description,
+						options: value.options?.map((value) => ({
+							value: value,
+							uuid: generateUuid(),
+						})),
+					})),
+				})),
+			}
 		} catch {
 			alert('Invalid JSON file. Please upload a valid JSON file.')
 		}

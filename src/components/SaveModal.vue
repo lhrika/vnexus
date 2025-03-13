@@ -47,15 +47,21 @@
 						></textarea>
 					</div>
 					<div class="flex flex-col gap-2 relative">
-						<template v-if="model.decisionPoints && model.decisionPoints.length > 0">
+						<TransitionGroup
+							enter-active-class="transition-all"
+							leave-active-class="transition-all"
+							move-class="transition-all"
+							enter-from-class="opacity-0 -translate-y-4"
+							leave-to-class="opacity-0 -translate-y-4"
+						>
 							<DecisionPoint
-								v-for="i in model!.decisionPoints!.length"
-								:key="i"
-								v-model="model!.decisionPoints[i - 1]"
-								@remove="handleRemoveDecisionPoint(i)"
+								v-for="i in model.decisionPoints?.length"
+								:key="model.decisionPoints![i - 1].uuid"
+								v-model="model.decisionPoints![i - 1]"
+								@remove="handleRemoveDecisionPoint(i - 1)"
 								@add="handleAddDecisionPoint"
 							></DecisionPoint>
-						</template>
+						</TransitionGroup>
 						<button
 							v-if="allDecisionPointsValid"
 							class="self-center px-4 py-1 cursor-pointer rounded-full border border-pink-400 text-pink-400 opacity-50 hover:opacity-100"
@@ -92,6 +98,7 @@ import { computed } from 'vue'
 import DecisionPoint from './DecisionPoint.vue'
 import { XMarkIcon, PlusIcon } from '@heroicons/vue/24/solid'
 import { BookmarkSquareIcon, TrashIcon } from '@heroicons/vue/24/outline'
+import { generateUuid } from '@/utils'
 
 // Model is the save editting
 const model = defineModel<Save>()
@@ -156,11 +163,12 @@ const handleAddDecisionPoint = () => {
 		model.value!.decisionPoints.push({
 			description: '',
 			decision: '',
+			uuid: generateUuid(),
 		})
 	}
 }
 
 const handleRemoveDecisionPoint = (i: number) => {
-	model.value?.decisionPoints?.splice(i - 1, 1)
+	model.value?.decisionPoints?.splice(i, 1)
 }
 </script>
