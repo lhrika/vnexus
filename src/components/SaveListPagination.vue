@@ -2,7 +2,7 @@
 	<div class="flex justify-center mt-4">
 		<button
 			type="button"
-			class="border border-r-0 rounded-l p-1 text-pink-300 hover:text-pink-400 border-pink-300 cursor-pointer hover:bg-pink-50 disabled:bg-gray-50 disabled:text-gray-300 disabled:border-gray-300 disabled:cursor-auto"
+			class="border rounded-l p-1 text-pink-300 hover:text-pink-400 border-pink-300 cursor-pointer hover:bg-pink-50 disabled:bg-gray-50 disabled:text-gray-300 disabled:border-gray-300 disabled:cursor-auto"
 			:disabled="page <= 0"
 			@click="prev"
 		>
@@ -10,7 +10,7 @@
 		</button>
 		<div class="relative">
 			<div
-				class="bg-white w-full h-full border border-pink-300 flex justify-center items-center min-w-20 font-bold"
+				class="w-full h-full border-y border-pink-300 flex justify-center items-center min-w-20 font-bold"
 			>
 				{{ page + 1 }} / {{ total }}
 			</div>
@@ -26,7 +26,7 @@
 		</div>
 		<button
 			type="button"
-			class="border border-l-0 rounded-r p-1 text-pink-300 hover:text-pink-400 border-pink-300 cursor-pointer hover:bg-pink-50 disabled:bg-gray-50 disabled:text-gray-300 disabled:border-gray-300 disabled:cursor-auto"
+			class="border rounded-r p-1 text-pink-300 hover:text-pink-400 border-pink-300 cursor-pointer hover:bg-pink-50 disabled:bg-gray-50 disabled:text-gray-300 disabled:border-gray-300 disabled:cursor-auto"
 			:disabled="page >= total - 1"
 			@click="next"
 		>
