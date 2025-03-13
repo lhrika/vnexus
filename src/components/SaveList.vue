@@ -20,14 +20,16 @@
 					gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
 				}"
 			>
-				<SaveSlot
-					v-for="i in savesPerPage"
-					:key="model[i - 1 + page * savesPerPage]?.createTime ?? generateUuid()"
-					:save="model[i - 1 + page * savesPerPage]"
-					:saveId="i - 1 + page * savesPerPage"
-					:savesPerPage
-					@click="chooseSave(i - 1 + page * savesPerPage)"
-				></SaveSlot>
+				<TransitionGroup move-class="transition-all">
+					<SaveSlot
+						v-for="i in savesPerPage"
+						:key="model[i - 1 + page * savesPerPage]?.createTime ?? generateUuid()"
+						:save="model[i - 1 + page * savesPerPage]"
+						:saveId="i - 1 + page * savesPerPage"
+						:savesPerPage
+						@click="chooseSave(i - 1 + page * savesPerPage)"
+					></SaveSlot>
+				</TransitionGroup>
 			</div>
 		</Transition>
 		<div class="flex justify-center mt-4">
