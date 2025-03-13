@@ -46,6 +46,7 @@
 									type="text"
 									class="grow text-sm border border-pink-300 outline-pink-400 rounded px-2 py-1"
 									v-model="model.options![i - 1].value"
+									ref="optionInput"
 								/>
 								<button
 									type="button"
@@ -85,7 +86,7 @@
 import type { DecisionPoint } from '@/types'
 import { generateUuid } from '@/utils'
 import { PlusIcon, XMarkIcon, TrashIcon } from '@heroicons/vue/16/solid'
-import { useTemplateRef, onMounted, onUnmounted, ref, computed } from 'vue'
+import { useTemplateRef, onMounted, onUnmounted, ref, computed, nextTick } from 'vue'
 
 const model = defineModel<DecisionPoint>({ required: true })
 const valid = computed(() => {
@@ -93,6 +94,7 @@ const valid = computed(() => {
 })
 const active = ref<boolean>(!valid.value)
 
+const optionInput = useTemplateRef<HTMLInputElement[]>('optionInput')
 const addOption = () => {
 	if (model.value!.options === undefined) {
 		model.value!.options = []
@@ -101,6 +103,7 @@ const addOption = () => {
 		value: '',
 		uuid: generateUuid(),
 	})
+	nextTick(() => optionInput.value![optionInput.value!.length - 1].focus())
 }
 
 const allOptionsValid = computed(() => {
