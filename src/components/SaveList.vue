@@ -1,26 +1,35 @@
 <template>
 	<div>
-		<div
-			class="gap-4"
-			:class="{
-				grid: layout === 'grid',
-				flex: layout === 'list',
-				'flex-col': layout === 'list',
-			}"
-			:style="{
-				gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-				gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
-			}"
+		<Transition
+			enter-active-class="transition-all"
+			leave-active-class="transition-all"
+			:enter-from-class="enterFromClass"
+			:leave-to-class="leaveToClass"
+			mode="out-in"
 		>
-			<SaveSlot
-				v-for="i in savesPerPage"
-				:key="i"
-				:save="model![i - 1 + page * savesPerPage]"
-				:saveId="i - 1 + page * savesPerPage"
-				:savesPerPage
-				@click="chooseSave(i - 1 + page * savesPerPage)"
-			></SaveSlot>
-		</div>
+			<div
+				:key="`page-${page}`"
+				class="gap-4"
+				:class="{
+					grid: layout === 'grid',
+					flex: layout === 'list',
+					'flex-col': layout === 'list',
+				}"
+				:style="{
+					gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+					gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
+				}"
+			>
+				<SaveSlot
+					v-for="i in savesPerPage"
+					:key="model[i - 1 + page * savesPerPage]?.createTime ?? generateUuid()"
+					:save="model[i - 1 + page * savesPerPage]"
+					:saveId="i - 1 + page * savesPerPage"
+					:savesPerPage
+					@click="chooseSave(i - 1 + page * savesPerPage)"
+				></SaveSlot>
+			</div>
+		</Transition>
 		<div class="flex justify-center mt-4">
 			<button
 				type="button"
@@ -30,7 +39,9 @@
 			>
 				<ChevronLeftIcon class="size-6" />
 			</button>
-			<div class="border border-pink-300 py-1 px-2 font-bold">
+			<div
+				class="border border-pink-300 py-1 px-2 flex justify-center items-center min-w-20 font-bold"
+			>
 				{{ page + 1 }} / {{ totalPages }}
 			</div>
 			<button
@@ -61,9 +72,10 @@ import { ChevronLeftIcon } from '@heroicons/vue/24/solid'
 import SaveSlot from './SaveSlot.vue'
 import { nextTick, ref, computed } from 'vue'
 import SaveModal from './SaveModal.vue'
+import { generateUuid } from '@/utils'
 
 // The model is an array of saves
-const model = defineModel<(Save | undefined)[]>()
+const model = defineModel<(Save | undefined)[]>({ required: true })
 const props = defineProps<{
 	max: number
 	rows: number
@@ -76,10 +88,16 @@ const page = ref(0)
 const savesPerPage = computed(() => props.rows * props.cols)
 const totalPages = computed(() => Math.ceil(props.max / savesPerPage.value))
 // Functions for navigation between pages
+const enterFromClass = ref<string>()
+const leaveToClass = ref<string>()
 const nextPage = () => {
+	enterFromClass.value = 'opacity-0 translate-x-10'
+	leaveToClass.value = 'opacity-0 -translate-x-10'
 	page.value++
 }
 const prevPage = () => {
+	enterFromClass.value = 'opacity-0 -translate-x-10'
+	leaveToClass.value = 'opacity-0 translate-x-10'
 	page.value--
 }
 
