@@ -43,8 +43,9 @@
 			</button>
 		</div>
 		<SaveModal
-			ref="save-modal"
+			ref="saveModal"
 			v-model="activeSave"
+			:open="isModalOpen"
 			:save-id="activeSaveId"
 			:saves-per-page="savesPerPage"
 			@close-modal="handleCloseModal"
@@ -58,7 +59,7 @@ import type { Save } from '@/types'
 import { ChevronRightIcon } from '@heroicons/vue/24/solid'
 import { ChevronLeftIcon } from '@heroicons/vue/24/solid'
 import SaveSlot from './SaveSlot.vue'
-import { nextTick, ref, useTemplateRef, computed } from 'vue'
+import { nextTick, ref, computed } from 'vue'
 import SaveModal from './SaveModal.vue'
 
 // The model is an array of saves
@@ -88,10 +89,7 @@ const activeSaveId = ref<number>()
 // Whether is choosing base
 const isChoosingBase = ref<boolean>(false)
 
-const saveModal = useTemplateRef('save-modal')
-const showModal = () => {
-	saveModal.value?.showModal()
-}
+const isModalOpen = ref<boolean>(false)
 
 const chooseSave = (id: number) => {
 	if (isChoosingBase.value) {
@@ -105,7 +103,7 @@ const chooseSave = (id: number) => {
 		activeSaveId.value = id
 	}
 	nextTick(() => {
-		showModal()
+		isModalOpen.value = true
 	})
 }
 
@@ -129,9 +127,11 @@ const handleCloseModal = (id: number, action: string) => {
 			}
 		}
 	}
+	isModalOpen.value = false
 }
 
 const handleChooseBase = () => {
+	isModalOpen.value = false
 	isChoosingBase.value = true
 }
 </script>

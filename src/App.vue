@@ -95,7 +95,6 @@ import SaveList from './components/SaveList.vue'
 import { ArrowDownCircleIcon } from '@heroicons/vue/24/outline'
 import NewDataForm from './components/NewDataForm.vue'
 import SettingPopup from './components/SettingPopup.vue'
-import { useI18n } from 'vue-i18n'
 const dataKey = 'VNexusData'
 const debugData = {
 	max: 120,
@@ -104,7 +103,6 @@ const debugData = {
 	saves: [],
 }
 const data = ref(debugData)
-const i18n = useI18n()
 
 onMounted(() => {
 	const serializedData = window.localStorage.getItem(dataKey)
