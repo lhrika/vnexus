@@ -15,9 +15,9 @@
 				{{ page + 1 }} / {{ total }}
 			</div>
 			<select
-				v-model="targetPage"
-				@change="handleChange"
+				:value="page"
 				class="absolute top-0 left-0 w-full h-full opacity-0"
+				@change="emit('update:page', parseInt(($event.target as HTMLSelectElement).value))"
 			>
 				<option v-for="page in total" :key="page" :value="page - 1">
 					{{ page }}
@@ -38,28 +38,24 @@
 <script setup lang="ts">
 import { ChevronRightIcon } from '@heroicons/vue/24/solid'
 import { ChevronLeftIcon } from '@heroicons/vue/24/solid'
-import { ref } from 'vue'
+
 const props = defineProps<{
-	total: number
 	page: number
+	total: number
 }>()
+
 const emit = defineEmits<{
-	(event: 'prev'): void
-	(event: 'next'): void
-	(event: 'goto', target: number): void
+	(event: 'update:page', page: number): void
 }>()
-const targetPage = ref<number>(props.page)
+
 const prev = () => {
 	if (props.page > 0) {
-		emit('prev')
+		emit('update:page', props.page - 1)
 	}
 }
 const next = () => {
 	if (props.page < props.total - 1) {
-		emit('next')
+		emit('update:page', props.page + 1)
 	}
-}
-const handleChange = () => {
-	emit('goto', targetPage.value)
 }
 </script>

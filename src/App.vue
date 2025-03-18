@@ -75,69 +75,54 @@
 		</header>
 
 		<main class="container max-w-screen-lg mx-auto p-4">
-			<template v-if="data">
-				<SaveList
-					:max="data.max"
-					:rows="data.rows"
-					:cols="data.cols"
-					:layout="layout"
-					v-model="data.saves"
-				></SaveList>
-			</template>
+			<SaveList :layout="layout" @select-save="handleSelectSave"></SaveList>
 		</main>
 	</article>
 	<SettingPopup v-model:layout="layout" />
+	<SaveModal
+		ref="saveModal"
+		v-model="model"
+		:open="isModalOpen"
+		@close-modal="handleCloseModal"
+		@choose-base="handleChooseBase"
+	></SaveModal>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import SaveList from './components/SaveList.vue'
 import { ArrowDownCircleIcon } from '@heroicons/vue/24/outline'
 import NewDataForm from './components/NewDataForm.vue'
 import SettingPopup from './components/SettingPopup.vue'
-import type { Data, ExportedData } from './types'
-import { generateUuid } from './utils'
-const dataKey = 'VNexusData'
-const debugData = {
-	max: 120,
-	rows: 3,
-	cols: 4,
-	saves: [],
-}
-const data = ref<Data>(debugData)
+import { useDataStore } from './stores/data'
+import SaveModal from './components/SaveModal.vue'
+import type { Save } from './types'
+
+const store = useDataStore()
 
 onMounted(() => {
-	const serializedData = window.localStorage.getItem(dataKey)
-	if (serializedData) {
-		data.value = JSON.parse(serializedData)
-	}
+	store.load()
+	const unsubscribe = store.$onAction(({ name, store, after }) => {
+		if (name === 'create' || name === 'updateSave' || name === 'deleteSave') {
+			after(() => {
+				console.log(JSON.stringify(store.data))
+				store.updateLocalStorage()
+			})
+		}
+	})
+	onUnmounted(() => {
+		unsubscribe()
+	})
 })
 
-const handleCreateNewData = (max: number, cols: number, rows: number) => {
-	data.value = {
-		max: max,
-		cols: cols,
-		rows: rows,
-		saves: [],
-	}
+const handleCreateNewData = (capacity: number, cols: number, rows: number) => {
+	store.create(capacity, cols, rows)
+	showHeader.value = false
 }
 
 const downloadJson = () => {
 	// Step 1: Convert JSON data to a string
-	const jsonString = JSON.stringify(
-		data.value,
-		(key, value) => {
-			// Check if the key is "options" and the value is an array
-			if (key === 'options' && Array.isArray(value)) {
-				// Map the array to extract only the "value" field from each object
-				return value.map((item) => item.value)
-			} else if (key === 'uuid') {
-				return undefined
-			}
-			return value // Return the value as-is for other keys
-		},
-		2,
-	)
+	const jsonString = store.jsonString
 
 	// Step 2: Create a Blob from the JSON string
 	const blob = new Blob([jsonString], { type: 'application/json' })
@@ -155,65 +140,15 @@ const downloadJson = () => {
 	URL.revokeObjectURL(url)
 }
 
-const loadFile = (file: File) => {
-	const reader = new FileReader() // Create a FileReader instance
-	// Define the onload callback
-	reader.onload = (e) => {
-		if (!e.target || !e.target.result) {
-			return
-		}
-		try {
-			// Parse the JSON data
-			const parsedData: ExportedData = JSON.parse(e.target.result.toString())
-			data.value = {
-				max: parsedData.max,
-				rows: parsedData.rows,
-				cols: parsedData.cols,
-				saves: parsedData.saves.map((value) => ({
-					base: value.base,
-					createTime: value.createTime,
-					updateTime: value.updateTime,
-					description: value.description,
-					decisionPoints: value.decisionPoints?.map((value) => ({
-						uuid: generateUuid(),
-						decision: value.decision,
-						description: value.description,
-						options: value.options?.map((value) => ({
-							value: value,
-							uuid: generateUuid(),
-						})),
-					})),
-				})),
-			}
-		} catch {
-			alert('Invalid JSON file. Please upload a valid JSON file.')
-		}
-	}
-	// Read the file as text
-	reader.readAsText(file)
-}
-
 const handleFileUpload = (event: Event) => {
 	if (event.target) {
 		const target = event.target as HTMLInputElement
 		const file = target.files?.item(0)
 		if (file) {
-			loadFile(file)
+			store.load(file)
 		}
 	}
 }
-
-// DEBUG: Print the data object on update
-watch(
-	data,
-	(value) => {
-		console.log(JSON.stringify(value))
-		window.localStorage.setItem(dataKey, JSON.stringify(value))
-	},
-	{
-		deep: true,
-	},
-)
 
 // Header
 const showHeader = ref<boolean>(false)
@@ -230,16 +165,48 @@ const handleDrop = (ev: DragEvent) => {
 			if (item.kind === 'file') {
 				const file = item.getAsFile()
 				if (file) {
-					loadFile(file)
+					store.load(file)
 				}
 			}
 		} else {
 			const file = ev.dataTransfer.files.item(0)
 			if (file) {
-				loadFile(file)
+				store.load(file)
 			}
 		}
 	}
 }
 const layout = ref<string>('grid')
+
+// Modal related code
+const isModalOpen = ref<boolean>(false)
+const isChoosingBase = ref<boolean>(false)
+const model = ref<Save>()
+const handleSelectSave = (id: number) => {
+	if (isChoosingBase.value) {
+		model.value!.base = id === model.value!.id ? undefined : id
+		isChoosingBase.value = false
+	} else {
+		store.activeSaveId = id
+		model.value = JSON.parse(JSON.stringify(store.activeSave))
+	}
+	isModalOpen.value = true
+}
+
+// When modal is closed, data should be updated
+const handleCloseModal = (action: string) => {
+	if (action === 'save') {
+		store.updateSave(model.value!)
+	} else if (action === 'delete') {
+		store.deleteSave()
+	}
+	isModalOpen.value = false
+	store.activeSaveId = undefined
+	model.value = undefined
+}
+
+const handleChooseBase = () => {
+	isModalOpen.value = false
+	isChoosingBase.value = true
+}
 </script>

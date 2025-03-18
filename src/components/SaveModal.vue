@@ -34,7 +34,7 @@
 							{{
 								model.base === undefined
 									? 'Select base save'
-									: `${Math.floor(model.base / savesPerPage) + 1} - ${(model.base % savesPerPage) + 1}`
+									: `${Math.floor(model.base / store.savesPerPage) + 1} - ${(model.base % store.savesPerPage) + 1}`
 							}}
 						</span>
 					</div>
@@ -71,7 +71,7 @@
 						</button>
 					</div>
 					<button
-						v-if="isNewSave"
+						v-if="isModified"
 						type="button"
 						class="flex justify-center items-center gap-1 py-3 px-4 bg-pink-300 text-white font-bold hover:bg-pink-400 rounded cursor-pointer max-w-96 self-center w-full"
 						@click="saveChange"
@@ -79,7 +79,7 @@
 						<BookmarkSquareIcon class="size-5" />Save
 					</button>
 					<button
-						v-else
+						v-if="store.activeSave"
 						type="button"
 						class="flex justify-center items-center gap-1 py-3 px-4 bg-gray-400 text-white font-bold hover:bg-gray-500 rounded cursor-pointer max-w-96 w-full self-center"
 						@click="deleteSave"
@@ -98,22 +98,24 @@ import { computed } from 'vue'
 import DecisionPoint from './DecisionPoint.vue'
 import { XMarkIcon, PlusIcon } from '@heroicons/vue/24/solid'
 import { BookmarkSquareIcon, TrashIcon } from '@heroicons/vue/24/outline'
-import { generateUuid } from '@/utils'
+import { generateUuid, validateDecisionPoint, validateOption } from '@/utils'
+import { useDataStore } from '@/stores/data'
 
-// Model is the save editting
+const store = useDataStore()
 const model = defineModel<Save>()
-const props = defineProps<{
-	saveId?: number
-	savesPerPage: number
+defineProps<{
 	open: boolean
 }>()
 const emit = defineEmits<{
-	(event: 'closeModal', id: number, action: 'save' | 'cancel' | 'delete'): void
+	(event: 'closeModal', action: 'save' | 'cancel' | 'delete'): void
 	(event: 'chooseBase'): void
 }>()
 
-const isNewSave = computed(() => {
-	return !model.value || model.value!.createTime < 1
+const isModified = computed(() => {
+	if (store.activeSave) {
+		return JSON.stringify(store.activeSave) !== JSON.stringify(model.value)
+	}
+	return true
 })
 
 const saveChange = () => {
@@ -121,24 +123,36 @@ const saveChange = () => {
 		model.value!.createTime = Date.now()
 	}
 	model.value!.updateTime = Date.now()
-	emit('closeModal', props.saveId!, 'save')
+	if (model.value!.decisionPoints) {
+		model.value!.decisionPoints = model.value!.decisionPoints.filter((decisionPoint) =>
+			validateDecisionPoint(decisionPoint),
+		)
+		for (const decisionPoint of model.value!.decisionPoints) {
+			if (decisionPoint.options) {
+				decisionPoint.options = decisionPoint.options.filter((option) => validateOption(option))
+			}
+			if (!decisionPoint.options) {
+				decisionPoint.options = undefined
+			}
+		}
+	}
+	if (!model.value!.decisionPoints) {
+		model.value!.decisionPoints = undefined
+	}
+	emit('closeModal', 'save')
 }
 
 const cancel = () => {
-	emit('closeModal', props.saveId!, 'cancel')
+	emit('closeModal', 'cancel')
 }
 
 const deleteSave = () => {
-	emit('closeModal', props.saveId!, 'delete')
+	emit('closeModal', 'delete')
 }
 
 // Hide modal temporarily to choose base save
 const chooseBase = () => {
 	emit('chooseBase')
-}
-
-const validateDecisionPoint = (decisionPoint: DecisionPointType) => {
-	return decisionPoint.decision && decisionPoint.description
 }
 
 const allDecisionPointsValid = computed(() => {

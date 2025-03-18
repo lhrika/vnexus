@@ -1,12 +1,12 @@
 <template>
 	<div class="flex flex-col gap-4 max-w-full">
 		<div class="flex flex-col gap-1">
-			<label for="max">Max Saves:</label>
+			<label for="Capacity">Max Saves:</label>
 			<input
-				v-model="max"
+				v-model="capacity"
 				type="number"
-				name="max"
-				id="max"
+				name="capacity"
+				id="capacity"
 				min="1"
 				class="border border-pink-300 rounded px-2 py-1 outline-pink-400"
 			/>
@@ -47,15 +47,15 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-const max = ref<number>(120)
+const capacity = ref<number>(120)
 const cols = ref<number>(4)
 const rows = ref<number>(3)
 
 const emit = defineEmits<{
-	(event: 'create', max: number, cols: number, rows: number): void
+	(event: 'create', capacity: number, cols: number, rows: number): void
 }>()
 
 const handleClick = () => {
-	emit('create', max.value, cols.value, rows.value)
+	emit('create', capacity.value, cols.value, rows.value)
 }
 </script>

@@ -84,14 +84,12 @@
 
 <script setup lang="ts">
 import type { DecisionPoint } from '@/types'
-import { generateUuid } from '@/utils'
+import { generateUuid, validateDecisionPoint, validateOption } from '@/utils'
 import { PlusIcon, XMarkIcon, TrashIcon } from '@heroicons/vue/16/solid'
 import { useTemplateRef, onMounted, onUnmounted, ref, computed, nextTick } from 'vue'
 
 const model = defineModel<DecisionPoint>({ required: true })
-const valid = computed(() => {
-	return model.value?.decision && model.value.description
-})
+const valid = computed(() => validateDecisionPoint(model.value))
 const active = ref<boolean>(!valid.value)
 
 const optionInput = useTemplateRef<HTMLInputElement[]>('optionInput')
@@ -110,11 +108,7 @@ const allOptionsValid = computed(() => {
 	if (model.value.options === undefined) {
 		return true
 	}
-	return (
-		model.value.options?.findIndex((option) => {
-			return option.value.trim().length < 1
-		}) < 0
-	)
+	return model.value.options?.findIndex((option) => !validateOption(option)) < 0
 })
 
 const handleRemoveOption = (i: number) => {
@@ -146,7 +140,6 @@ onUnmounted(() => {
 
 const emit = defineEmits<{
 	(event: 'remove'): void
-	(event: 'add'): void
 }>()
 const remove = () => {
 	emit('remove')

@@ -11,6 +11,8 @@ export interface DecisionPoint {
 }
 
 export interface Save {
+	id: number
+	uuid: string
 	base?: number
 	description?: string
 	decisionPoints?: DecisionPoint[]
@@ -19,16 +21,19 @@ export interface Save {
 }
 
 export interface Data {
-	max: number
+	capacity: number
 	cols: number
 	rows: number
 	saves: Save[]
 }
 
 export type ExportedData = Omit<Data, 'saves'> & {
-	saves: (Omit<Save, 'decisionPoints'> & {
-		decisionPoints?: (Omit<DecisionPoint, 'uuid' | 'options'> & {
-			options: string[]
-		})[]
-	})[]
+	saves: (
+		| (Omit<Save, 'decisionPoints' | 'id' | 'uuid'> & {
+				decisionPoints?: (Omit<DecisionPoint, 'uuid' | 'options'> & {
+					options: string[]
+				})[]
+		  })
+		| undefined
+	)[]
 }
