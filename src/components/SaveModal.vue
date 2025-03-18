@@ -58,6 +58,12 @@
 								v-for="i in model.decisionPoints?.length"
 								:key="model.decisionPoints![i - 1].uuid"
 								v-model="model.decisionPoints![i - 1]"
+								:tooltip="
+									model.decisionPoints!.length === 1 &&
+									!validateDecisionPoint(model.decisionPoints![0])
+										? store.baseSave?.description
+										: undefined
+								"
 								@remove="handleRemoveDecisionPoint(i - 1)"
 							></DecisionPoint>
 						</TransitionGroup>
@@ -129,8 +135,6 @@ const isModified = computed(() => {
 		if (!modelValue.decisionPoints || modelValue.decisionPoints.length < 1) {
 			modelValue.decisionPoints = undefined
 		}
-		console.log(JSON.stringify(store.activeSave))
-		console.log(JSON.stringify(modelValue))
 		return JSON.stringify(store.activeSave) !== JSON.stringify(modelValue)
 	}
 	return true

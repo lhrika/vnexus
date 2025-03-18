@@ -11,20 +11,37 @@
 				<button type="button" class="self-end cursor-pointer" @click="remove">
 					<XMarkIcon class="size-4" />
 				</button>
-				<label class="flex flex-col">
+				<label class="flex flex-col relative">
 					Description:
 					<input
 						type="text"
 						class="border border-pink-300 outline-pink-400 rounded px-2 py-1"
-						v-model="model.description"
+						v-model.trim="model.description"
+						@focusin="handleFocusIn"
+						@focusout="handleFocusOut"
+						@input="handleInputDescription"
 					/>
+					<Transition
+						enter-active-class="transition-opacity"
+						leave-active-class="transition-opacity"
+						enter-from-class="opacity-0"
+						leave-to-class="opacity-0"
+					>
+						<div
+							v-if="showToolTip"
+							class="absolute top-4 left-28 text-sm p-1 border border-amber-300 text-gray-500 rounded bg-amber-50"
+							@click.prevent="model.description = tooltip!"
+						>
+							{{ tooltip }}
+						</div>
+					</Transition>
 				</label>
 				<label class="flex flex-col">
 					Decision:
 					<input
 						type="text"
 						class="border border-pink-300 outline-pink-400 rounded px-2 py-1"
-						v-model="model.decision"
+						v-model.trim="model.decision"
 					/>
 				</label>
 				<div class="relative">
@@ -45,7 +62,7 @@
 								<input
 									type="text"
 									class="grow text-sm border border-pink-300 outline-pink-400 rounded px-2 py-1"
-									v-model="model.options![i - 1].value"
+									v-model.trim="model.options![i - 1].value"
 									ref="optionInput"
 								/>
 								<button
@@ -89,8 +106,27 @@ import { PlusIcon, XMarkIcon, TrashIcon } from '@heroicons/vue/16/solid'
 import { useTemplateRef, onMounted, onUnmounted, ref, computed, nextTick } from 'vue'
 
 const model = defineModel<DecisionPoint>({ required: true })
+const props = defineProps<{
+	tooltip?: string
+}>()
+const showToolTip = ref<boolean>(false)
 const valid = computed(() => validateDecisionPoint(model.value))
 const active = ref<boolean>(!valid.value)
+
+const handleFocusIn = () => {
+	if (props.tooltip && !model.value.description) {
+		setTimeout(() => (showToolTip.value = true), 100)
+	}
+}
+const handleFocusOut = () => {
+	setTimeout(() => (showToolTip.value = false), 100)
+}
+
+const handleInputDescription = (e: Event) => {
+	if ((e.target as HTMLInputElement).value) {
+		showToolTip.value = false
+	}
+}
 
 const optionInput = useTemplateRef<HTMLInputElement[]>('optionInput')
 const addOption = () => {

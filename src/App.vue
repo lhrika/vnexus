@@ -185,6 +185,7 @@ const model = ref<Save>()
 const handleSelectSave = (id: number) => {
 	if (isChoosingBase.value) {
 		model.value!.base = id === model.value!.id ? undefined : id
+		store.activeSave!.base = model.value!.base
 		isChoosingBase.value = false
 	} else {
 		store.activeSaveId = id
