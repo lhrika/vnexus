@@ -112,7 +112,26 @@ const emit = defineEmits<{
 
 const isModified = computed(() => {
 	if (store.activeSave) {
-		return JSON.stringify(store.activeSave) !== JSON.stringify(model.value)
+		const modelValue: Save = JSON.parse(JSON.stringify(model.value))
+		if (modelValue.decisionPoints) {
+			modelValue.decisionPoints = modelValue.decisionPoints.filter((decisionPoint) =>
+				validateDecisionPoint(decisionPoint),
+			)
+			for (const decisionPoint of modelValue.decisionPoints) {
+				if (decisionPoint.options) {
+					decisionPoint.options = decisionPoint.options.filter((option) => validateOption(option))
+				}
+				if (!decisionPoint.options || decisionPoint.options.length < 1) {
+					decisionPoint.options = undefined
+				}
+			}
+		}
+		if (!modelValue.decisionPoints || modelValue.decisionPoints.length < 1) {
+			modelValue.decisionPoints = undefined
+		}
+		console.log(JSON.stringify(store.activeSave))
+		console.log(JSON.stringify(modelValue))
+		return JSON.stringify(store.activeSave) !== JSON.stringify(modelValue)
 	}
 	return true
 })
@@ -130,12 +149,12 @@ const saveChange = () => {
 			if (decisionPoint.options) {
 				decisionPoint.options = decisionPoint.options.filter((option) => validateOption(option))
 			}
-			if (!decisionPoint.options) {
+			if (!decisionPoint.options || decisionPoint.options.length < 1) {
 				decisionPoint.options = undefined
 			}
 		}
 	}
-	if (!model.value!.decisionPoints) {
+	if (!model.value!.decisionPoints || model.value!.decisionPoints.length < 1) {
 		model.value!.decisionPoints = undefined
 	}
 	emit('closeModal', 'save')
