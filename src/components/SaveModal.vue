@@ -19,7 +19,7 @@
 				<div
 					v-show="open"
 					v-if="model"
-					class="relative bg-white p-4 rounded max-w-screen-md grow flex flex-col gap-4"
+					class="relative bg-white p-4 rounded max-w-screen-md grow flex flex-col gap-4 max-h-full overflow-auto"
 				>
 					<button
 						type="button"
@@ -75,23 +75,54 @@
 							<PlusIcon class="size-6"></PlusIcon>
 						</button>
 					</div>
+					<div class="flex flex-col md:flex-row-reverse gap-4">
+						<button
+							v-if="isModified"
+							type="button"
+							class="flex justify-center items-center gap-1 py-3 px-4 bg-pink-300 text-white font-bold hover:bg-pink-400 rounded cursor-pointer max-w-96 self-center w-full"
+							@click="saveChange"
+						>
+							<BookmarkSquareIcon class="size-5" />Save
+						</button>
+						<button
+							v-if="store.activeSave"
+							type="button"
+							class="flex justify-center items-center gap-1 py-3 px-4 bg-red-800 text-white font-bold hover:bg-red-700 rounded cursor-pointer max-w-96 w-full self-center"
+							@click="deleteSave"
+						>
+							<TrashIcon class="size-5" />
+							Delete
+						</button>
+					</div>
 					<button
-						v-if="isModified"
 						type="button"
-						class="flex justify-center items-center gap-1 py-3 px-4 bg-pink-300 text-white font-bold hover:bg-pink-400 rounded cursor-pointer max-w-96 self-center w-full"
-						@click="saveChange"
+						@click="showChronicle = !showChronicle"
+						class="border rounded px-4 py-3 cursor-pointer bg-gray-500 hover:bg-gray-400 text-white font-bold w-full max-w-96 self-center"
 					>
-						<BookmarkSquareIcon class="size-5" />Save
+						Chronicle
 					</button>
-					<button
-						v-if="store.activeSave"
-						type="button"
-						class="flex justify-center items-center gap-1 py-3 px-4 bg-gray-400 text-white font-bold hover:bg-gray-500 rounded cursor-pointer max-w-96 w-full self-center"
-						@click="deleteSave"
+					<div
+						v-if="showChronicle"
+						class="overflow-auto max-h-full relative p-4 border rounded border-pink-300"
 					>
-						<TrashIcon class="size-5" />
-						Delete
-					</button>
+						<button
+							class="sticky float-right top-0 right-0 cursor-pointer hover:opacity-80"
+							@click="copyChronicle"
+						>
+							<Transition
+								enter-active-class="transition-opacity"
+								leave-active-class="transition-opacity"
+								enter-from-class="opacity-0"
+								leave-to-class="opacity-0"
+								mode="out-in"
+							>
+								<CheckIcon v-if="copySucceeded" class="size-6 inline-block" />
+								<DocumentDuplicateIcon v-else class="size-6 inline-block" />
+							</Transition>
+							Copy
+						</button>
+						<pre>{{ chronicle }}</pre>
+					</div>
 				</div>
 			</Transition>
 		</div>
@@ -99,12 +130,13 @@
 </template>
 <script setup lang="ts">
 import type { DecisionPoint as DecisionPointType, Save } from '@/types'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import DecisionPoint from './DecisionPoint.vue'
 import { XMarkIcon, PlusIcon } from '@heroicons/vue/24/solid'
 import { BookmarkSquareIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import { generateUuid, validateDecisionPoint, validateOption } from '@/utils'
 import { useDataStore } from '@/stores/data'
+import { DocumentDuplicateIcon, CheckIcon } from '@heroicons/vue/24/outline'
 
 const store = useDataStore()
 const model = defineModel<Save>()
@@ -206,5 +238,45 @@ const handleAddDecisionPoint = () => {
 
 const handleRemoveDecisionPoint = (i: number) => {
 	model.value?.decisionPoints?.splice(i, 1)
+}
+
+const showChronicle = ref(false)
+const chronicle = computed(() => {
+	const getAllSaves = (startSave: Save | undefined): Save[] => {
+		const saves: Save[] = []
+		let currentSave = startSave
+		while (currentSave) {
+			saves.push(currentSave)
+			currentSave = currentSave.base ? store.saves[currentSave.base] : undefined
+		}
+		return saves
+	}
+	const saves = getAllSaves(store.activeSave)
+	const decisionPoints = saves.reduce<DecisionPointType[]>((acc, save) => {
+		if (save.decisionPoints) {
+			return acc.concat([...save.decisionPoints].reverse()) // Create a reversed copy to avoid mutation
+		}
+		return acc
+	}, [])
+	return decisionPoints
+		.reduce((acc, dp) => {
+			return `${acc}
+✨${dp.description}
+　🟢 ${dp.decision}${
+				dp.options && dp.options.length > 0
+					? dp.options.reduce((acc, option) => {
+							return `${acc}\n　❌ ${option.value}`
+						}, '')
+					: ''
+			}`
+		}, '')
+		.trim()
+})
+const copySucceeded = ref<boolean>(false)
+const copyChronicle = () => {
+	navigator.clipboard.writeText(chronicle.value).then(() => {
+		copySucceeded.value = true
+		setTimeout(() => (copySucceeded.value = false), 1000)
+	})
 }
 </script>

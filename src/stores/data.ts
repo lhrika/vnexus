@@ -136,6 +136,7 @@ export const useDataStore = defineStore('data', () => {
 							}
 						}),
 					}
+					updateLocalStorage()
 				} catch {
 					alert('Invalid JSON file. Please upload a valid JSON file.')
 				}
