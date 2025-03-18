@@ -21,13 +21,38 @@
 					v-if="model"
 					class="relative bg-white p-4 rounded max-w-screen-md grow flex flex-col gap-4 max-h-full overflow-auto"
 				>
-					<button
-						type="button"
-						class="absolute top-4 right-4 cursor-pointer text-gray-500 hover:text-gray-900"
-						@click="cancel"
-					>
-						<XMarkIcon class="size-6" />
-					</button>
+					<div class="absolute top-4 right-4 flex gap-2">
+						<div ref="menu" class="flex items-center relative">
+							<button
+								type="button"
+								class="cursor-pointer text-gray-500 hover:text-gray-900"
+								@click="toggleMenu"
+							>
+								<EllipsisHorizontalIcon class="size-6" />
+							</button>
+							<div
+								v-if="showMenu"
+								class="absolute top-4 right-6 rounded flex flex-col border border-gray-300 p-2"
+							>
+								<button
+									v-if="store.activeSave?.createTime"
+									type="button"
+									class="text-red-800 hover:text-red-700 cursor-pointer flex gap-1 items-center"
+									@click="deleteSave"
+								>
+									<TrashIcon class="size-5" />
+									Delete
+								</button>
+							</div>
+						</div>
+						<button
+							type="button"
+							class="cursor-pointer text-gray-500 hover:text-gray-900"
+							@click="cancel"
+						>
+							<XMarkIcon class="size-6" />
+						</button>
+					</div>
 					<div>
 						<span v-if="model.base !== undefined">🟢 Base save is </span>
 						<span class="hover:underline text-blue-700 cursor-pointer" @click.prevent="chooseBase">
@@ -85,22 +110,13 @@
 							<BookmarkSquareIcon class="size-5" />Save
 						</button>
 						<button
-							v-if="store.activeSave"
 							type="button"
-							class="flex justify-center items-center gap-1 py-3 px-4 bg-red-800 text-white font-bold hover:bg-red-700 rounded cursor-pointer max-w-96 w-full self-center"
-							@click="deleteSave"
+							@click="showChronicle = !showChronicle"
+							class="border rounded px-4 py-3 cursor-pointer bg-gray-500 hover:bg-gray-400 text-white font-bold w-full max-w-96 self-center"
 						>
-							<TrashIcon class="size-5" />
-							Delete
+							Chronicle
 						</button>
 					</div>
-					<button
-						type="button"
-						@click="showChronicle = !showChronicle"
-						class="border rounded px-4 py-3 cursor-pointer bg-gray-500 hover:bg-gray-400 text-white font-bold w-full max-w-96 self-center"
-					>
-						Chronicle
-					</button>
 					<div
 						v-if="showChronicle"
 						class="overflow-auto max-h-full relative p-4 border rounded border-pink-300"
@@ -130,9 +146,9 @@
 </template>
 <script setup lang="ts">
 import type { DecisionPoint as DecisionPointType, Save } from '@/types'
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue'
 import DecisionPoint from './DecisionPoint.vue'
-import { XMarkIcon, PlusIcon } from '@heroicons/vue/24/solid'
+import { XMarkIcon, PlusIcon, EllipsisHorizontalIcon } from '@heroicons/vue/24/solid'
 import { BookmarkSquareIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import { generateUuid, validateDecisionPoint, validateOption } from '@/utils'
 import { useDataStore } from '@/stores/data'
@@ -282,4 +298,25 @@ const copyChronicle = () => {
 		setTimeout(() => (copySucceeded.value = false), 1000)
 	})
 }
+
+// Related to menu
+const showMenu = ref(false)
+const toggleMenu = () => {
+	if (!store.activeSave?.createTime) {
+		return
+	}
+	showMenu.value = !showMenu.value
+}
+const menu = useTemplateRef('menu')
+const handleClickOutsideMenu = (e: MouseEvent) => {
+	if (!menu.value?.contains(e.target as HTMLElement)) {
+		showMenu.value = false
+	}
+}
+onMounted(() => {
+	document.addEventListener('click', handleClickOutsideMenu)
+})
+onUnmounted(() => {
+	document.removeEventListener('click', handleClickOutsideMenu)
+})
 </script>
