@@ -193,14 +193,17 @@ const saveChange = () => {
 	if (!model.value!.decisionPoints || model.value!.decisionPoints.length < 1) {
 		model.value!.decisionPoints = undefined
 	}
+	showChronicle.value = false
 	emit('closeModal', 'save')
 }
 
 const cancel = () => {
+	showChronicle.value = false
 	emit('closeModal', 'cancel')
 }
 
 const deleteSave = () => {
+	showChronicle.value = false
 	emit('closeModal', 'delete')
 }
 
