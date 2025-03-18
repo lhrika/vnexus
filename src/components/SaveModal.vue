@@ -59,7 +59,6 @@
 								:key="model.decisionPoints![i - 1].uuid"
 								v-model="model.decisionPoints![i - 1]"
 								@remove="handleRemoveDecisionPoint(i - 1)"
-								@add="handleAddDecisionPoint"
 							></DecisionPoint>
 						</TransitionGroup>
 						<button
