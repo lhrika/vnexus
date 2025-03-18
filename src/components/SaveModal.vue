@@ -75,7 +75,7 @@
 							<PlusIcon class="size-6"></PlusIcon>
 						</button>
 					</div>
-					<div class="flex flex-col md:flex-row-reverse gap-4">
+					<div class="flex flex-col md:flex-row-reverse items-center justify-center gap-4">
 						<button
 							v-if="isModified"
 							type="button"
@@ -249,12 +249,12 @@ const chronicle = computed(() => {
 			saves.push(currentSave)
 			currentSave = currentSave.base ? store.saves[currentSave.base] : undefined
 		}
-		return saves
+		return saves.reverse()
 	}
 	const saves = getAllSaves(store.activeSave)
 	const decisionPoints = saves.reduce<DecisionPointType[]>((acc, save) => {
 		if (save.decisionPoints) {
-			return acc.concat([...save.decisionPoints].reverse()) // Create a reversed copy to avoid mutation
+			return acc.concat(save.decisionPoints) // Create a reversed copy to avoid mutation
 		}
 		return acc
 	}, [])
